@@ -1,0 +1,109 @@
+Mapa del delta de homicidios 2012-2013
+========================================================
+
+
+```{r}
+library(rpart)
+library(rattle)
+library(ggplot2)
+library(grid)
+library(plyr)
+library(FactoMineR)
+library(gridExtra)
+library(maptools)
+library(rgdal)
+library(Hmisc)
+```
+
+```{r}
+tres_valores <- function(x) {
+  if(x == 0) { return("Cero")}
+  if(x < 0)  { return("Negativo")}
+  if(x > 0)  {return("Positivo")}
+}
+```
+
+```{r}
+homicidios.df <- read.csv("./data/homicidios2012-2013.csv")
+homicidios.df$delta <- homicidios.df$homicidios13 - homicidios.df$homicidios12
+homicidios.df$empeoromejoro <- ifelse(homicidios.df$delta<0, "Negativo",
+  	ifelse(homicidios.df$delta == 0, "Cero",
+		ifelse(homicidios.df$delta>0,"Positivo", NA
+		)))
+homicidios.df$empeoromejoro <- as.factor(homicidios.df$empeoromejoro)
+
+homicidios.df$empeoromejoro <- factor(homicidios.df$empeoromejoro, levels=c("Negativo", "Cero", "Positivo"))
+
+homicidios.df$homicidios13.booleano <- ifelse(homicidios.df$homicidios13 == 0, "No", "Si")
+
+homicidios.df$homicidios13.booleano <- as.factor(homicidios.df$homicidios13.booleano)
+
+homicidios.df$homicidios12.booleano <- ifelse(homicidios.df$homicidios12 == 0, "No", "Si")
+
+homicidios.df$homicidios12.booleano <- as.factor(homicidios.df$homicidios12.booleano)
+
+
+municipios <- readOGR(dsn="./mpio/", layer="mpio")
+municipios@data$id <- rownames(municipios@data)
+municipios@data$codigo_municipio <- as.numeric(gsub(" ", "", paste(municipios@data$DPTO, municipios@data$MPIO)))
+deptos <- readOGR(dsn="./depto/", layer="depto")
+levels(deptos@data$DPTO) <- as.numeric(levels(deptos@data$DPTO))
+deptos@data$id <- rownames(deptos@data)
+deptos.df <- fortify(deptos)
+
+municipios.data <- merge(municipios@data, homicidios.df, by.x="codigo_municipio", by.y="cod.municipio", all.x=T, all.y=F)
+
+municipios.df <- fortify(municipios)
+municipios.df <- join(municipios.df, municipios.data, by="id")
+```
+
+```{r}
+th <- theme(axis.text.x = element_blank(), 
+            axis.text.y = element_blank(), 
+            axis.ticks= element_blank(),
+            axis.title=element_blank(),
+            panel.grid.major=element_blank(), 
+            panel.grid.minor=element_blank(), 
+            plot.background=element_blank(), 
+             panel.background=element_blank()
+#             panel.border=element_blank()
+            )
+
+p <- ggplot(data=municipios.df, aes(x=long, y=lat, group=group)) + coord_equal() + th
+p <- p + geom_path(color="white")
+p.delta <- p + geom_polygon(aes(fill=empeoromejoro))
+p.delta <- p.delta + scale_fill_manual(values=c("#ffc519", "#007fd4", "#d45500"), 
+                       name="Cambio en la tasa de\n homicidios de 2012 a 2013", na.value="grey40", 
+                       labels=c("Se redujo", "Igual", "Aumentó"))
+p.delta <- p.delta + geom_path(color="white", data=deptos.df, size= 0.2,  aes(x=long, y=lat, group=group))
+
+p.delta
+```
+
+```{r}
+p <- ggplot(data=municipios.df, aes(x=long, y=lat, group=group)) + coord_equal() + th
+p <- p + geom_path(color="white")
+p.cero13 <- p + geom_polygon(aes(fill=homicidios13.booleano))
+p.cero13 <- p.cero13 + scale_fill_manual(values=c("#ffc519", "#007fd4"), 
+                       name="Homicidios en 2013", na.value="grey40")
+p.cero13 <- p.cero13 + geom_path(color="white", data=deptos.df, size= 0.2,  aes(x=long, y=lat, group=group))
+
+p.cero13
+```
+
+
+```{r}
+p <- ggplot(data=municipios.df, aes(x=long, y=lat, group=group)) + coord_equal() + th
+p <- p + geom_path(color="white")
+p.cero12 <- p + geom_polygon(aes(fill=homicidios12.booleano))
+p.cero12 <- p.cero12 + scale_fill_manual(values=c("#ffc519", "#007fd4"), 
+                       name="Homicidios en 2012", na.value="grey40")
+p.cero12 <- p.cero12 + geom_path(color="white", data=deptos.df, size= 0.2,  aes(x=long, y=lat, group=group))
+
+p.cero12
+```
+
+```{r}
+p.cero<- arrangeGrob(p.cero12, p.cero13, nrow=1)
+p.cero
+```
