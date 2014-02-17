@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Veinte años de homicidios (1990-2010)</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<style>
+#mapa{width:100%;
+	display:block;
+	margin:0 0 20px 0;
+	padding:0;
+	vertical-align:baseline;
+	background:transparent;
+	border:0;outline:0;
+	position:relative;
+	}
+
+.nombre{text-transform:capitalize;}
+.mpio-borde {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  stroke-width: 0.5;}
+.depto-borde {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  stroke-width: 1;}
+.mpio {fill: #555;}
+.mpio.bajo-muertos {fill: #f85f5f;}
+.mpio.medio-muertos {fill: #fb3131;}
+.mpio.alto-muertos {fill: #af2222;}
+.mpio.cero-muertos {fill: #5f99f8;}
+svg {display: block; margin: 0 auto;}
+.year-label{font-size:3.3em; fill: #ccc;}
+.homs-year{font-size:1.2em; fill:#f85f5f;}
+.mpio.mpio_activo, .mpio.cero-muertos.mpio_activo, .mpio.muertos.mpio_activo {fill: #ffef2a;}
+.caption{display: block; margin: 0 auto; 
+	font-size:.8em;
+	position:absolute;
+	top:100px;
+	left:0; width:200px;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="row">
+<div class="col-md-4">
+<h1>Homicidios en Colombia<br><small>1990-2010</small></h1>
+<select id="fila" class="form-control">
+</select>
+<small>Mueva el puntero sobre el mapa para obtener información de cada municipio.</small>
+</div>
+<div class="col-md-8">
+<div id="mapa">
+<div class="caption"></div>
+</div>
+</div>
+
+</div>
+<div class="row">
+<div class="col-md-6">
+<h3>¿Qué es la tasa de homicidios?</h3>
+Es una forma de medir el número de homicidios relativo a la población. Se interpreta como el número de homicidios anuales por cada cien mil habitantes. Para calcularlo, divida el número de homicidios sobre la población y multiplique por cien mil. La tasa de homicidios no dice cuántas personas fueron asesinadas sino cuál es su proporción (escalada por cien mil) con respecto al total de la población. Sirve para hacer comparaciones entre poblaciones de tamaños distintos. <a href="http://es.wikipedia.org/wiki/Anexo:Lista_de_pa%C3%ADses_por_tasa_de_homicidio_intencional">Aquí</a> hay una lista de tasas de homicidio por país.
+</div>
+<div class="col-md-6">
+<h3>¿De dónde salen estos datos?</h3>
+Los números de homicidios son recopilados por la policía colombiana. Las poblaciones para cada año son estimadas por el Dane. Los municipios coloreados en gris no tienen datos.
+<h3>¿Quién hizo esto?</h3>
+Este es un trabajo de <a href="http://www.finiterank.com/notas/">Javier Moreno</a> con apoyo logístico de <a href="https://twitter.com/apelaez1">Alejandro Peláez</a>, que guarda tablas como pasatiempo. Para generar el mapa abusé de <a href="http://d3js.org/">D3</a>, <a href="https://github.com/mbostock/topojson">TopoJSON</a> y <a href="http://jquery.com/">JQuery</a>. Este <a href="http://bost.ocks.org/mike/map/">tutorial</a> de <a href="https://twitter.com/mbostock">Mike Bostock</a> fue esencial. El andamio es <a href="http://getbootstrap.com/">Bootstrap</a>.
+</div>
+</div>
+
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<!-- <script src="scripts/main.js"></script> -->
+<script>
+
+var width = $("#mapa").width();
+var height = width;
+
+var svg = d3.select("#mapa").append("svg")
+	.attr("preserveAspectRatio", "xMidYMid")
+    .attr("viewBox", "0 0 900 900")
+    .attr("width", width)
+    .attr("height", height);
+
+var x_coord = 100;
+var y_coord = 700;
+
+var circle1 = svg.append("circle")
+             .attr("cx", x_coord)
+             .attr("cy", y_coord)
+             .attr("r", 10)
+             .attr("fill", "#5f99f8");
+var text1 = svg.append("text")
+			 .attr("x", x_coord+20)
+			 .attr("y", y_coord+5)
+			 .text("Cero homicidios");
+var circle2 = svg.append("circle")
+             .attr("cx", x_coord)
+             .attr("cy", y_coord+30)
+             .attr("r", 10)
+             .attr("fill", "#f85f5f");
+var text2 = svg.append("text")
+			 .attr("x", x_coord+20)
+			 .attr("y", y_coord+5+30)
+			 .text("Tasa mayor que cero y menor que 50");
+var circle3 = svg.append("circle")
+             .attr("cx", x_coord)
+             .attr("cy", y_coord+60)
+             .attr("r", 10)
+             .attr("fill", "#fb3131");
+var text3 = svg.append("text")
+			 .attr("x", x_coord+20)
+			 .attr("y", y_coord+5+60)
+			 .text("Tasa mayor que 50 y menor que 150");
+var circle4 = svg.append("circle")
+             .attr("cx", x_coord)
+             .attr("cy", y_coord+90)
+             .attr("r", 10)
+             .attr("fill", "#af2222");
+var text4 = svg.append("text")
+			 .attr("x", x_coord+20)
+			 .attr("y", y_coord+5+90)
+			 .text("Tasa mayor que 150");
+
+/* Pereza de buscar cómo se hacen loops dentro del JSON */
+
+var totaleshom = [23865, 27803, 27777, 27726, 26438, 24980, 26130, 24824, 22673, 23820, 25859, 27356, 28363, 23098, 19798, 17822, 17134, 16891, 15856, 15550, 15143]
+
+$(window).resize(function() {
+  var width = $("#mapa").width();
+  var height = width;
+  svg.attr("width", width);
+  svg.attr("height", height);
+});
+
+/* 
+ogr2ogr -f GeoJSON depts.json depto.shp -s_srs EPSG:26986 -t_srs EPSG:4326
+topojson --id-property NOMBRE_DPT -p name=NOMBRE_DPT -p name -o colombia-departamentos.json depts.json
+*/
+
+d3.json("colombia-municipios.json", function(error, co) {
+    var subunits = topojson.feature(co, co.objects.mpios);
+    var projection = d3.geo.mercator()
+    	.scale(2000)
+    	.translate([width / 2, height / 2])
+    	.center([-61,43])
+    	.rotate([3.8,1,3]);
+	var path = d3.geo.path()
+		.projection(projection);
+	svg.append("path")
+		.datum(subunits)
+		.attr("d", path);
+	svg.selectAll(".mpio")
+	    .data(subunits.features)
+  		.enter().append("path")
+    	.attr("class", function(d) { 
+    		var output = "mpio " + "_" + d.id;
+    		var j = "tas90";
+    		if(d.properties[j] == 0){output = output + " cero-muertos";}
+    		if(d.properties[j] > 0 && d.properties[j] <= 50 ){output = output + " bajo-muertos";}
+    		if(d.properties[j] > 50 && d.properties[j] <= 150 ){output = output + " medio-muertos";} 
+    		if(d.properties[j] > 150 ){output = output + " alto-muertos";} 
+    		return output;})
+    	.on("mouseover", function(d) {
+    		d3.select("._" + d.id).classed("mpio_activo", true);
+    		var year = $( ".year-label" ).text()
+    		var yearnum = Number(year)-1990;
+    		var yearshort = year.slice(-2);
+            var tasayear = "tas" + yearshort;
+            var homyear = "hom" + yearshort;
+            var pobyear = "pob" + yearshort;
+    		$('.caption').empty();
+     		var captit = '<small>';
+     		if(d.properties.mun){
+    		captit = captit + '<h4 class="nombre">' + d.properties.mun.toLowerCase() + '<br><small>' + d.properties.dep.toLowerCase() + '</small></h4></small>';}
+    		else {
+    		captit = captit + '<h4 class="nombre">' + d.properties.name.toLowerCase() + '<br><small>' + d.properties.dpt.toLowerCase() + '</small></h4></small>';
+    		}
+    		$('.caption').append(captit);
+    		var capinfo = '<small>Tasa de homicidios: ' + d.properties[tasayear].toFixed(2).toString().replace(".", ",");
+    		capinfo = capinfo + '<br>Número de homicidios: ' + d.properties[homyear].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    		capinfo = capinfo + '<br>Población: ' + d.properties[pobyear].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    		capinfo = capinfo + '</small>';
+    		$('.caption').append(capinfo);
+    	})
+    	.on("mouseout", function(d) {d3.select("._" + d.id).classed("mpio_activo", false);})
+    	.attr("d", path);
+    svg.append("path")
+    .datum(topojson.mesh(co, co.objects.mpios, function(a, b) { return a !== b; }))
+    .attr("d", path)
+    .attr("class", "mpio-borde");
+    svg.append("path")
+    .datum(topojson.mesh(co, co.objects.depts, function(a, b) { return a !== b; }))
+    .attr("d", path)
+    .attr("class", "depto-borde");
+    svg.append("text")
+    	.attr("class", "year-label")
+    	.attr("x", "550")
+    	.attr("y", "250")
+    	.text("1990");
+    svg.append("text")
+    	.attr("class", "homs-year")
+    	.attr("x", "535")
+    	.attr("y", "280")
+    	.text("23.865 homicidios");
+    $('#fila').change(function(){
+            var v = this.value;
+            var homs = totaleshom[Number(v)-1990].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            homs = homs + " homicidios";
+            var dosdigs = v.slice(-2);
+            var colyear = "tas" + dosdigs;
+            console.log(colyear);
+            svg.selectAll(".mpio")
+            .data(subunits.features)
+            .attr("class", function(d) {
+            	var output = "mpio " + "_" + d.id;
+    			if(d.properties[colyear] == 0){output = output + " cero-muertos";}
+    			if(d.properties[colyear] > 0 && d.properties[colyear] <= 50 ){output = output + " bajo-muertos";}
+    			if(d.properties[colyear] > 50 && d.properties[colyear] <= 150 ){output = output + " medio-muertos";} 
+    			if(d.properties[colyear] > 150 ){output = output + " alto-muertos";} 
+    			return output;
+            });
+            $(".year-label").empty();
+            $(".year-label").append(v);
+        	$(".homs-year").empty();
+            $(".homs-year").append(homs);});
+});
+
+function imprimirOpciones(num){
+	'use strict';
+	var output = "";
+	for(var i=1990; i <= num; i++){
+		output = output + '<option value="' + i + '">' + i + '</option>';
+	}
+	return output;
+}
+
+
+$(document).ready(function() {
+	'use strict';
+	var opcionesImpresas = imprimirOpciones(2010);
+	$('#fila').append(opcionesImpresas);
+});
+</script>
+</body>
+</html>
