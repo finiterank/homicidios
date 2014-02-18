@@ -247,7 +247,7 @@ d3.json("colombia-municipios.json", function(error, co) {
     		$('.caption').append(captit);
     		var capinfo = '<small>Población: ' + d.properties[pobyear].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         capinfo = capinfo + '<br>Número de homicidios: ' + d.properties[homyear].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        capinfo = capinto + '<br>Tasa de homicidios: ' + d.properties[tasayear].toFixed(2).toString().replace(".", ",");
+        capinfo = capinfo + '<br>Tasa de homicidios: ' + d.properties[tasayear].toFixed(2).toString().replace(".", ",");
     		capinfo = capinfo + '</small>';
     		$('.caption').append(capinfo);
     	})
