@@ -17,6 +17,32 @@
 	position:relative;
 	}
 
+      #grafiquito {font-size:.5em; position:absolute;
+  top:210px;
+  left:0; width:200px;}
+      #grafiquito svg {height:70px; width:150px; margin:0;}
+      #grafiquito path {
+        stroke: steelblue;
+        stroke-width: 1;
+        fill: none;
+      }
+      
+      .axis {
+        shape-rendering: crispEdges;
+      }
+
+      .x.axis line {
+        stroke: lightgrey;
+      }
+
+      .x.axis .minor {
+        stroke-opacity: .5;
+      }
+
+      .x.axis path {
+        display: none;
+      }
+
 .nombre{text-transform:capitalize;}
 .mpio-borde {
   fill: none;
@@ -51,11 +77,13 @@ svg {display: block; margin: 0 auto;}
 <h1>Homicidios en Colombia<br><small>1990-2010</small></h1>
 <select id="fila" class="form-control">
 </select>
-<small>Mueva el puntero sobre el mapa para obtener información de cada municipio. (En tablillas tipo iPad toque el municipio brevemente y espere.)</small>
+<small>Mueva el puntero sobre el mapa para obtener información de cada municipio, incluyendo un pequeño gráfico de la tasa de homicidio para el municipio a través de las dos décadas. (En tablillas tipo iPad toque el municipio brevemente y espere.)</small>
 </div>
 <div class="col-md-8">
 <div id="mapa">
 <div class="caption"></div>
+<div id="grafiquito">
+</div>
 </div>
 </div>
 
@@ -177,7 +205,39 @@ d3.json("colombia-municipios.json", function(error, co) {
             var tasayear = "tas" + yearshort;
             var homyear = "hom" + yearshort;
             var pobyear = "pob" + yearshort;
-    		$('.caption').empty();
+            var tasas = [];
+            for(ye = 1990; ye <= 2010; ye++){
+              tye = "tas" + ye.toString().slice(-2);
+              tasas.push(d.properties[tye]);
+            }
+            console.log(tasas);
+            console.log(tasas.length);
+            $('#grafiquito').empty();
+            var m = [0, 12, 0, 8];
+            var w = 100; 
+            var h = 30; 
+            var x_range = d3.scale.linear().domain([0, tasas.length]).range([0, w]);
+            var y_range = d3.scale.linear().domain([0, d3.max(tasas)]).range([h, 0]);
+            var line = d3.svg.line()
+            .x(function(dg,i) { return x_range(i);})
+            .y(function(dg) { return y_range(dg);});
+            var graph = d3.select("#grafiquito").append("svg:svg")
+            .attr("width", w)
+            .attr("height", h)
+            .append("svg:g")
+            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+            var xAxis = d3.svg.axis().scale(x_range).tickSize(-h).tickSubdivide(true)
+              .tickFormat(function(dg) {
+                                var dgv = dg + 1990;
+                                return dgv.toString().slice(-2); });
+      // Add the x-axis.
+            graph.append("svg:g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + h + ")")
+            .call(xAxis);
+            graph.append("svg:path").attr("d", line(tasas));
+
+      	$('.caption').empty();
      		var captit = '<small>';
      		if(d.properties.mun){
     		captit = captit + '<h4 class="nombre">' + d.properties.mun.toLowerCase() + '<br><small>' + d.properties.dep.toLowerCase() + '</small></h4></small>';}
