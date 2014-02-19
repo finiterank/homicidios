@@ -138,7 +138,7 @@ var circle2 = svg.append("circle")
 var text2 = svg.append("text")
 			 .attr("x", x_coord+20)
 			 .attr("y", y_coord+5+30)
-			 .text("Tasa mayor que cero y menor que 50");
+			 .text("Tasa mayor que cero y menor que 20");
 var circle3 = svg.append("circle")
              .attr("cx", x_coord)
              .attr("cy", y_coord+60)
@@ -147,7 +147,7 @@ var circle3 = svg.append("circle")
 var text3 = svg.append("text")
 			 .attr("x", x_coord+20)
 			 .attr("y", y_coord+5+60)
-			 .text("Tasa mayor que 50 y menor que 150");
+			 .text("Tasa mayor que 20 y menor que 70");
 var circle4 = svg.append("circle")
              .attr("cx", x_coord)
              .attr("cy", y_coord+90)
@@ -156,7 +156,7 @@ var circle4 = svg.append("circle")
 var text4 = svg.append("text")
 			 .attr("x", x_coord+20)
 			 .attr("y", y_coord+5+90)
-			 .text("Tasa mayor que 150");
+			 .text("Tasa mayor que 70");
 
 /* Pereza de buscar cómo se hacen loops dentro del JSON */
 
@@ -193,9 +193,9 @@ d3.json("colombia-municipios.json", function(error, co) {
     		var output = "mpio " + "_" + d.id;
     		var j = "tas90";
     		if(d.properties[j] == 0){output = output + " cero-muertos";}
-    		if(d.properties[j] > 0 && d.properties[j] <= 50 ){output = output + " bajo-muertos";}
-    		if(d.properties[j] > 50 && d.properties[j] <= 150 ){output = output + " medio-muertos";} 
-    		if(d.properties[j] > 150 ){output = output + " alto-muertos";} 
+    		if(d.properties[j] > 0 && d.properties[j] <= 20 ){output = output + " bajo-muertos";}
+    		if(d.properties[j] > 20 && d.properties[j] <= 70 ){output = output + " medio-muertos";} 
+    		if(d.properties[j] > 70 ){output = output + " alto-muertos";} 
     		return output;})
     	.on("mouseover", function(d) {
     		d3.select("._" + d.id).classed("mpio_activo", true);
@@ -283,9 +283,9 @@ d3.json("colombia-municipios.json", function(error, co) {
             .attr("class", function(d) {
             	var output = "mpio " + "_" + d.id;
     			if(d.properties[colyear] == 0){output = output + " cero-muertos";}
-    			if(d.properties[colyear] > 0 && d.properties[colyear] <= 50 ){output = output + " bajo-muertos";}
-    			if(d.properties[colyear] > 50 && d.properties[colyear] <= 150 ){output = output + " medio-muertos";} 
-    			if(d.properties[colyear] > 150 ){output = output + " alto-muertos";} 
+    			if(d.properties[colyear] > 0 && d.properties[colyear] <= 20 ){output = output + " bajo-muertos";}
+    			if(d.properties[colyear] > 20 && d.properties[colyear] <= 70 ){output = output + " medio-muertos";} 
+    			if(d.properties[colyear] > 70 ){output = output + " alto-muertos";} 
     			return output;
             });
             $(".year-label").empty();
