@@ -57,12 +57,16 @@ for(i in 1990:2013){
   sufijo <- lastnchar(i, 2)
   homcol <- paste("hom", sufijo, sep="")
   codcol <- paste("cod", sufijo, sep="")
+  pobcol <- paste("pob", sufijo, sep="")
   homs.totales <- sum(h.df[, homcol], na.rm=T)
   homs.toptas <- sum(h.df[h.df$cod %in% toptas[[j]][, codcol], homcol], na.rm=T)
   homs.tophom <- sum(h.df[h.df$cod %in% tophom[[j]][, codcol], homcol], na.rm=T)
   homs.violentos <- sum(h.df[h.df$cod %in% violentos[[j]]$cod, homcol], na.rm=T)
   len.violentos <- nrow(violentos[[j]])
-  porcentajehoms[[j]] <- data.frame( año = 1989+j, porcentaje.tophom = 100 * (homs.tophom/homs.totales), porcentaje.toptas = 100 * (homs.toptas/homs.totales), porcentaje.violentos = 100 * (homs.violentos/homs.totales), cuantos.violentos = len.violentos)
+  pob.total <- sum(h.df[, pobcol], na.rm=T)
+  pob.violentos <- sum(h.df[h.df$cod %in% violentos[[j]]$cod ,pobcol], na.rm=T)
+  pob.toptas <- sum(h.df[h.df$cod %in% toptas[[j]][, codcol] ,pobcol], na.rm=T)
+  porcentajehoms[[j]] <- data.frame( año = 1989+j, porcentaje.tophom = 100 * (homs.tophom/homs.totales), porc.hom.toptas = 100 * (homs.toptas/homs.totales), porc.pob.toptas = 100*(pob.toptas/pob.total), porc.hom.vio = 100 * (homs.violentos/homs.totales), porc.pob.vio = 100 * (pob.violentos / pob.total), cuantos.vio = len.violentos)
 }
 
 tablaporcentajes.df <- do.call(rbind,lapply(1:24, function(i)
