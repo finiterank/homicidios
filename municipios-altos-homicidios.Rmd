@@ -76,3 +76,34 @@ tablaporcentajes.df <- tablaporcentajes.df[,!(names(tablaporcentajes.df) %in% dr
 ```{r}
 tablaporcentajes.df
 ```
+
+```{r}
+lasppales <- h.df$cod[h.df$municipio %in% c("Medellín", "Cali", "Barranquilla", "Bogotá D.C.")]
+porcentajeppales <- vector(mode="list", length=24)
+for(i in 1990:2013){
+  j <- i-1989
+  sufijo <- lastnchar(i, 2)
+  homcol <- paste("hom", sufijo, sep="")
+  pobcol <- paste("pob", sufijo, sep="")
+  codcol <- paste("cod", sufijo, sep="")
+  homs.totales <- sum(h.df[, homcol], na.rm=T)
+  pob.total <- sum(h.df[, pobcol], na.rm=T)
+  pob.principales <- sum(h.df[h.df$cod %in% lasppales ,pobcol], na.rm=T)
+  homs.principales <- sum(h.df[h.df$cod %in% lasppales, homcol], na.rm=T)
+  porcentajeppales[[j]] <- data.frame( año = 1989+j, porcentaje.homicidios.ppales = 100 * (homs.principales/homs.totales), porcentaje.poblacion.ppales = 100 * (pob.principales/pob.total))
+}
+
+tablappales.df <- do.call(rbind,lapply(1:24, function(i)
+           if (length(porcentajeppales[[i]]) > 1)
+           cbind(porcentajeppales[[i]],session=i)  ))
+
+drops <- c("session")
+tablappales.df <- tablappales.df[,!(names(tablappales.df) %in% drops)]
+```
+
+```{r}
+for(i in 1:24){
+  write(paste("Año", i+1989, sep=" "), file="")
+  print(violentos[[i]][,c("municipio", "departamento")], row.names=FALSE)
+}
+```
