@@ -1,0 +1,78 @@
+Listas de Municipios con Altos Homicidios
+========================================================
+
+```{r}
+library(plyr)
+library(ggplot2)
+library(Hmisc)
+```
+
+```{r}
+load("./data/homicidios.1990.a.2013.Rda")
+```
+
+```{r}
+lastnchar <- function(x, n){
+  ch <- as.character(x)
+  substr(ch, nchar(ch)-n+1, nchar(ch))
+}
+```
+
+```{r}
+toptas <- vector(mode = "list", length = 24)
+for(i in 1990:2013){
+  sufijo <- lastnchar(i, 2)
+  tascol <- paste("tas", sufijo, sep="")
+  relcol <- c("cod", "municipio", "departamento", tascol)
+  tempdf <- h.df[, relcol]
+  tempdf <- tempdf[order(-tempdf[tascol]),]
+  names(tempdf) <- c(paste("cod", sufijo, sep=""), paste("mun", sufijo, sep=""), paste("dep", sufijo, sep=""), tascol)
+  toptas[[i-1989]] <- tempdf[1:50,]
+}
+
+tophom <- vector(mode = "list", length = 24)
+for(i in 1990:2013){
+  sufijo <- lastnchar(i, 2)
+  homcol <- paste("hom", sufijo, sep="")
+  relcol <- c("cod", "municipio", "departamento", homcol)
+  tempdf <- h.df[, relcol]
+  tempdf <- tempdf[order(-tempdf[homcol]),]
+  names(tempdf) <- c(paste("cod", sufijo, sep=""), paste("mun", sufijo, sep=""), paste("dep", sufijo, sep=""), homcol)
+  tophom[[i-1989]] <- tempdf[1:50,]
+}
+
+violentos <- vector(mode="list", length=24)
+for(i in 1990:2013){
+  j <- i-1989
+  sufijo <- lastnchar(i, 2)
+  codcol <- paste("cod", sufijo, sep="")
+  violentos[[j]] <- h.df[h.df$cod %in% intersect(toptas[[j]][, codcol], tophom[[j]][, codcol]), c("cod", "municipio", "departamento")]
+}
+```
+
+```{r}
+porcentajehoms <- vector(mode="list", length=24)
+for(i in 1990:2013){
+  j <- i-1989
+  sufijo <- lastnchar(i, 2)
+  homcol <- paste("hom", sufijo, sep="")
+  codcol <- paste("cod", sufijo, sep="")
+  homs.totales <- sum(h.df[, homcol], na.rm=T)
+  homs.toptas <- sum(h.df[h.df$cod %in% toptas[[j]][, codcol], homcol], na.rm=T)
+  homs.tophom <- sum(h.df[h.df$cod %in% tophom[[j]][, codcol], homcol], na.rm=T)
+  homs.violentos <- sum(h.df[h.df$cod %in% violentos[[j]]$cod, homcol], na.rm=T)
+  len.violentos <- nrow(violentos[[j]])
+  porcentajehoms[[j]] <- data.frame( año = 1989+j, porcentaje.tophom = 100 * (homs.tophom/homs.totales), porcentaje.toptas = 100 * (homs.toptas/homs.totales), porcentaje.violentos = 100 * (homs.violentos/homs.totales), cuantos.violentos = len.violentos)
+}
+
+tablaporcentajes.df <- do.call(rbind,lapply(1:24, function(i)
+           if (length(porcentajehoms[[i]]) > 1)
+           cbind(porcentajehoms[[i]],session=i)  ))
+
+drops <- c("session")
+tablaporcentajes.df <- tablaporcentajes.df[,!(names(tablaporcentajes.df) %in% drops)]
+```
+
+```{r}
+tablaporcentajes.df
+```
