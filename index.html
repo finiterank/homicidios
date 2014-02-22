@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Veinte años de homicidios (1990-2010)</title>
+    <title>Colombia: veinticuatro años de homicidios (1990-2013)</title>
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <style>
 #mapa{width:100%;
@@ -74,7 +74,7 @@ svg {display: block; margin: 0 auto;}
 <div class="container">
 <div class="row">
 <div class="col-md-4">
-<h1>Homicidios en Colombia<br><small>1990-2010</small></h1>
+<h1>Homicidios en Colombia<br><small>1990-2013</small></h1>
 <select id="fila" class="form-control">
 </select>
 <small><p>Mueva el puntero sobre el mapa para obtener información de cada municipio, incluyendo un pequeño gráfico de la tasa de homicidio para el municipio a través de las dos décadas. (En tablillas tipo iPad toque el municipio brevemente y espere.)</p><p>Los municipios coloreados en gris no cuentan con datos para ese año.</p></small>
@@ -160,7 +160,7 @@ var text4 = svg.append("text")
 
 /* Pereza de buscar cómo se hacen loops dentro del JSON */
 
-var totaleshom = [23865, 27803, 27777, 27726, 26438, 24980, 26130, 24824, 22673, 23820, 25859, 27356, 28363, 23098, 19798, 17822, 17134, 16891, 15856, 15550, 15143]
+var totaleshom = [23865, 27803, 27777, 27726, 26438, 24980, 26130, 24824, 22673, 23820, 25859, 27356, 28363, 23098, 19798, 17822, 17134, 16891, 15856, 15550, 15143, 16549, 14990, 15187]
 
 $(window).resize(function() {
   var width = $("#mapa").width();
@@ -206,7 +206,7 @@ d3.json("colombia-municipios.json", function(error, co) {
             var homyear = "hom" + yearshort;
             var pobyear = "pob" + yearshort;
             var tasas = [];
-            for(ye = 1990; ye <= 2010; ye++){
+            for(ye = 1990; ye <= 2013; ye++){
               tye = "tas" + ye.toString().slice(-2);
               tasas.push(d.properties[tye]);
             }
@@ -306,7 +306,7 @@ function imprimirOpciones(num){
 
 $(document).ready(function() {
 	'use strict';
-	var opcionesImpresas = imprimirOpciones(2010);
+	var opcionesImpresas = imprimirOpciones(2013);
 	$('#fila').append(opcionesImpresas);
 });
 </script>
