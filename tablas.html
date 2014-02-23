@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Colombia: veinticuatro años de homicidios (1990-2013)</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<style>
+#tabla-izquierda, #tabla-derecha {margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+	<h1>Elija un año:</h1>
+	<select id="years" class="form-control">
+	</select>
+	<p class="text-right">Municipios marcados en <span style="background-color:#fcf8e3;">amarillo</span> están en ambas listas.</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<h3>Cincuenta con<br>mayor número de homicidios</h3>
+<small>Contribuyen un <span class="porc-top-hom"></span>% al total de homicidios en <spam class="selected-year"></span></small> 
+<div id="tabla-izquierda">
+</div>
+</div>
+<div class="col-md-6">
+<h3>Cincuenta con<br>mayor tasa de homicidios <small>(por 100K habs.)</small></h3>
+<small>Contribuyen un <span class="porc-top-tas"></span>% al total de homicidios en <spam class="selected-year"></span></small> 
+<div id="tabla-derecha">
+</div>
+</div>
+</div>
+</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/tablas.js"></script>
+</body>
+</html>
