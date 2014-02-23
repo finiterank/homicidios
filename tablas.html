@@ -9,28 +9,80 @@
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <style>
 #tabla-izquierda, #tabla-derecha {margin-top:20px;}
+svg {display: block; margin: 0 auto;}
+
+#grafico{width:100%;
+	display:block;
+	margin:0 0 20px 0;
+	padding:0;
+	vertical-align:baseline;
+	background:transparent;
+	border:0;outline:0;
+	position:relative;
+	}
+
+.bar.yr-activo{fill: deepskyblue;}
+.bar.yr-activo:hover{fill: deepskyblue;}
+
+.bar {
+  fill: orangered;
+}
+
+.bar:hover {
+  fill: darkorange;
+}
+
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
 </style>
 </head>
 <body>
+
+<nav class="navbar navbar-default navbar-static-top" role="navigation">
+  <div class="container">
+     <ul class="nav navbar-nav">
+        <li><a href="index.html">Mapa de homicidios</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+      	<li><a href="http://www.finiterank.com/notas/2014/02/19/19-2/">Reflexión</a></li>
+      	<li><a href="http://www.finiterank.com/notas/2014/02/17/17-3/">Explicación</a></li>
+      </ul>
+  </div>
+</nav>
+
 <div class="container">
 <div class="row">
 <div class="col-md-12">
-	<img src="pics/largo.png" style="width:100%;">
-	<h1>Elija un año:</h1>
-	<select id="years" class="form-control">
-	</select>
-	<p class="text-right">Municipios <span style="background-color:#fcf8e3;">resaltados</span> están en ambas listas.</p>
+<h1>Homicidios por cada 100.000 habitantes en Colombia (1990-2013)<br><small>Haga click sobre las barras</small></h1>
+	<div id="grafico"></div>
+
+	<h1 class="text-center selected-yr">1991</h1>
+	<h2 class="text-center"><small>Los <span class="num-vio"></span> municipios incluídos en ambas listas están <span style="background-color:#fcf8e3;">resaltados</span></small></h2>
+	<!-- <select id="years" class="form-control"> 
+	</select>-->
 </div>
 </div>
 <div class="row">
 <div class="col-md-6">
-<h3>Cincuenta con<br>mayor número de homicidios</h3>
+<h3>Los cincuenta municipios con<br>mayor número de homicidios</h3>
 <small>Contribuyen un <span class="porc-top-hom"></span>% al total de homicidios del año <spam class="selected-year"></span></small> 
 <div id="tabla-izquierda">
 </div>
 </div>
 <div class="col-md-6">
-<h3>Cincuenta con<br>mayor tasa de homicidios <small>(por 100K habs.)</small></h3>
+<h3>Los cincuenta municipios <br>mayor tasa de homicidios <small>(por 100K habs.)</small></h3>
 <small>Contribuyen un <span class="porc-top-tas"></span>% al total de homicidios del año <spam class="selected-year"></span></small> 
 <div id="tabla-derecha">
 </div>
@@ -38,7 +90,18 @@
 </div>
 </div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="d3.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="tablas.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-48011916-1', 'finiterank.github.io');
+  ga('send', 'pageview');
+
+</script>
 </body>
 </html>

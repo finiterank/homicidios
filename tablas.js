@@ -1,5 +1,84 @@
 // Varias funciones para generar y manipular tablas extraídas de un CSV. Algunas más genéricas que otras. 
 // Autor: Javier Moreno (bluelephant@gmail.com)
+// Febrero de 2014
+
+// Gráficos 
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40};
+var width = $('#grafico').width() - margin.left - margin.right;
+var height = 250 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10, "");
+
+var svg = d3.select("#grafico").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+function click(d){
+  generadorTablas(tabla, d.yr, 50);
+}
+
+function pintarGrafico(tabla){
+	var data = new Array();
+
+	var arreglohomicidios = conteoHomicidios(tabla, 1990, 2013);
+	var arreglopoblacion = conteoPoblacion(tabla, 1990, 2013);
+
+	var valores = calcularTasas(arreglohomicidios, arreglopoblacion);
+
+	for(var yr = 1990; yr<= 2013; yr++){
+  		data.push({'yr': yr, 'tasa': valores[yr-1990]});
+  	}
+
+	x.domain(data.map(function(d) { return d.yr; }));
+	y.domain([0, d3.max(data, function(d) { return d.tasa; })]);
+
+  	svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  	svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+      //.append("text")
+      //.attr("transform", "rotate(-90)")
+      //.attr("y", 6)
+      //.attr("dy", ".71em")
+      //.style("text-anchor", "end")
+      //.text("Tasa Homs.");
+
+  svg.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.yr); })
+      .attr("yr", function(d){return d.yr;})
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.tasa); })
+      .attr("height", function(d) { return height - y(d.tasa); })
+      .on("click", function(d){
+      	generadorTablas(tabla, d.yr, 50);
+      });
+}
+
+// Tablas
+
 
 function isElementOf(x, array){ return array.indexOf(x) != -1;}
 
@@ -29,7 +108,7 @@ function columnaTabla(tab, index){
 	return output;
 }
 
-// Orden reverso (!) por índice index
+// Orden reverso (!) por índice index (¡columna numérica!)
 
 function ordenarTabla(tab, index){
 	var tablafiltrada = tab.filter(function f(e){return !(isNaN(e[index]));})
@@ -38,8 +117,10 @@ function ordenarTabla(tab, index){
 
 function tablaHomicidios(tab , yr){
 	var homindex = 3 * (yr - 1989);
+	var popindex = 1 + (3 * (yr - 1989));
 	var columnas = [0,1,2];
 	columnas.push(homindex);
+	columnas.push(popindex);
 	return extraerColumnas(tab, columnas);
 }
 
@@ -50,8 +131,10 @@ function ordenarTablaHom(tab , yr){
 
 function tablaTasas(tab , yr){
 	var tasindex = 2 + (3 * (yr - 1989));
+	var popindex = 1 + (3 * (yr - 1989));
 	var columnas = [0,1,2];
 	columnas.push(tasindex);
+	columnas.push(popindex);	
 	return extraerColumnas(tab, columnas);
 }
 
@@ -101,11 +184,47 @@ function totalHomicidios(tabla, yr){
     return arrhoms.reduce(function(a,b){return a+b});
 }
 
-function generadorTablas(tabla, yr, n){
-    var encabezadohom = ["Municipio", "Departamento", "Número de Homicidios"];
-    var encabezadotas = ["Municipio", "Departamento", "Tasa de Homicidios"];
+function totalPoblacion(tabla, yr){
+	var pobindex = 1+ (3 * (yr - 1989));
+    var arrpobs = columnaTabla(tabla, pobindex).map(function(x){
+    	if(isNaN(x)){return 0;}
+    	else{return Number(x);}});
+    return arrpobs.reduce(function(a,b){return a+b});
+}
 
-	var totalhom = totalHomicidios(tabla, yr); 
+// ¿Cómo vuelvo estas cuatro funciones dos de una forma elegante? 
+
+function conteoHomicidios(tabla, yr1, yr2){
+	var output = new Array();
+	for(var i = yr1; i<=yr2; i++){
+		output.push(totalHomicidios(tabla, i));
+	}
+	return output;
+}
+
+function conteoPoblacion(tabla, yr1, yr2){
+	var output = new Array();
+	for(var i = yr1; i<=yr2; i++){
+		output.push(totalPoblacion(tabla, i));
+	}
+	return output;
+}
+
+// Para ser serios habría que revisar que ambos arreglos tienen la misma longitud, supongo...
+
+function calcularTasas(arrhoms, arrpobs){
+	var output = new Array();
+	for(var i = 0; i< arrhoms.length; i++){
+		output.push(100000 * (arrhoms[i]/arrpobs[i]));
+	}
+	return output;
+}
+
+function generadorTablas(tabla, yr, n){
+    var encabezadohom = ["Municipio", "Departamento", "Número de Homicidios", "Población"];
+    var encabezadotas = ["Municipio", "Departamento", "Tasa de Homicidios", "Población"];
+
+    var totalhom = totalHomicidios(tabla, yr); 
 
     var izquierda = ordenarTablaHom(tabla, yr).slice(0,n);
     var totalhomizq = totalHomicidios(izquierda, yr);
@@ -118,14 +237,22 @@ function generadorTablas(tabla, yr, n){
  	var derechaimpresa = tablaImpresa(tablaTasas(derecha, yr), encabezadotas, "tas");
 
  	var interseccionindices = interSection(indicesizquierda, indicesderecha);
+ 	var numeroviolentos = interseccionindices.length;
 
  	var porctoptas = 100 * totalhomder / totalhom;
  	var porctophom = 100 * totalhomizq / totalhom;
-
+ 	var viejoyr = $( ".selected-yr" ).text();
+    var viejoyrnum = Number(viejoyr);
+    d3.select('[yr="'+ viejoyrnum +'"]').classed("yr-activo", false);
+ 	$('.selected-yr').empty();
+ 	$('.selected-yr').append(yr);
+ 	d3.select('[yr="'+ yr +'"]').classed("yr-activo", true);
  	$('#tabla-izquierda').empty();
  	$('#tabla-derecha').empty();
  	$('.porc-top-tas').empty();
  	$('.porc-top-hom').empty();
+ 	$('.num-vio').empty();
+ 	$('.num-vio').append(numeroviolentos);
  	$('.selected-year').empty();
  	$('.selected-year').append(yr);
  	$('.porc-top-tas').append(porctoptas.toFixed(2));
@@ -153,11 +280,13 @@ function procesarTabla(archivo) {
             tabla.push(linearreglo);
         }
     }
+    pintarGrafico(tabla);
     generadorTablas(tabla, 1990, 50);
-    $('#years').change(function(){
-    	var agno = Number(this.value);
-    	generadorTablas(tabla, agno, 50);
-    });
+ // Aquí vamos a llamar el generador del gráfico.
+    // $('#years').change(function(){
+    // 	var agno = Number(this.value);
+    // 	generadorTablas(tabla, agno, 50);
+    // });
 }
 
 function imprimirAgnos(num){
@@ -167,6 +296,11 @@ function imprimirAgnos(num){
 	}
 	return output;
 }
+
+
+
+
+
 
 $(document).ready(function() {
 	var agnosimpresos = imprimirAgnos(2013);
