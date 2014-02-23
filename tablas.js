@@ -45,7 +45,7 @@ function pintarGrafico(tabla){
   		data.push({'yr': yr, 'tasa': valores[yr-1990]});
   	}
 
-	x.domain(data.map(function(d) { return d.yr; }));
+	x.domain(data.map(function(d) { return d.yr.toString().slice(-2);}));
 	y.domain([0, d3.max(data, function(d) { return d.tasa; })]);
 
   	svg.append("g")
@@ -67,7 +67,7 @@ function pintarGrafico(tabla){
       .data(data)
       .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { return x(d.yr); })
+      .attr("x", function(d) { return x(d.yr.toString().slice(-2)); })
       .attr("yr", function(d){return d.yr;})
       .attr("width", x.rangeBand())
       .attr("y", function(d) { return y(d.tasa); })
