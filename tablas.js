@@ -131,16 +131,6 @@ function ordenarTablaHom(tab , yr){
 	return ordenarTabla(tab, homindex);
 }
 
-function tablaTasas(tab , yr){
-	var homindex = 3 * (yr - 1989);
-	var tasindex = 2 + (3 * (yr - 1989));
-	var popindex = 1 + (3 * (yr - 1989));
-	var columnas = [0,1,2];
-	columnas.push(tasindex);
-	columnas.push(popindex);	
-	return extraerColumnas(tab, columnas);
-}
-
 function ordenarTablaTas(tab , yr){
 	var tasindex = 2+ (3 * (yr - 1989));
 	return ordenarTabla(tab, tasindex);
@@ -295,11 +285,6 @@ function procesarTabla(archivo) {
     }
     pintarGrafico(tabla);
     generadorTablas(tabla, 1990, 50);
- // Aquí vamos a llamar el generador del gráfico.
-    // $('#years').change(function(){
-    // 	var agno = Number(this.value);
-    // 	generadorTablas(tabla, agno, 50);
-    // });
 }
 
 function imprimirAgnos(num){
@@ -309,11 +294,6 @@ function imprimirAgnos(num){
 	}
 	return output;
 }
-
-
-
-
-
 
 $(document).ready(function() {
 	var agnosimpresos = imprimirAgnos(2013);
