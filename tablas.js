@@ -115,11 +115,13 @@ function ordenarTabla(tab, index){
 	return tablafiltrada.sort(function(x,y){return y[index]-x[index];});
 }
 
-function tablaHomicidios(tab , yr){
+function tablaHomTasPob(tab , yr){
 	var homindex = 3 * (yr - 1989);
+	var tasindex = 2 + (3 * (yr - 1989));
 	var popindex = 1 + (3 * (yr - 1989));
 	var columnas = [0,1,2];
 	columnas.push(homindex);
+	columnas.push(tasindex);
 	columnas.push(popindex);
 	return extraerColumnas(tab, columnas);
 }
@@ -130,6 +132,7 @@ function ordenarTablaHom(tab , yr){
 }
 
 function tablaTasas(tab , yr){
+	var homindex = 3 * (yr - 1989);
 	var tasindex = 2 + (3 * (yr - 1989));
 	var popindex = 1 + (3 * (yr - 1989));
 	var columnas = [0,1,2];
@@ -221,26 +224,31 @@ function calcularTasas(arrhoms, arrpobs){
 }
 
 function generadorTablas(tabla, yr, n){
-    var encabezadohom = ["Municipio", "Departamento", "Número de Homicidios", "Población"];
-    var encabezadotas = ["Municipio", "Departamento", "Tasa de Homicidios", "Población"];
+    var encabezado = ["Municipio", "Departamento", "Número de Homicidios", "Tasa de Homicidios", "Población"];
 
     var totalhom = totalHomicidios(tabla, yr); 
+    var totalpob = totalPoblacion(tabla,yr);
 
     var izquierda = ordenarTablaHom(tabla, yr).slice(0,n);
     var totalhomizq = totalHomicidios(izquierda, yr);
+    var totalpobizq = totalPoblacion(izquierda,yr);
     var indicesizquierda = columnaTabla(izquierda, 0);
-    var izquierdaimpresa = tablaImpresa(tablaHomicidios(izquierda, yr), encabezadohom, "hom");
+    var izquierdaimpresa = tablaImpresa(tablaHomTasPob(izquierda, yr), encabezado, "hom");
 
  	var derecha =  ordenarTablaTas(tabla, yr).slice(0,n);
  	var totalhomder = totalHomicidios(derecha, yr);
+ 	var totalpobder = totalPoblacion(derecha,yr);
  	var indicesderecha = columnaTabla(derecha, 0);
- 	var derechaimpresa = tablaImpresa(tablaTasas(derecha, yr), encabezadotas, "tas");
+ 	var derechaimpresa = tablaImpresa(tablaHomTasPob(derecha, yr), encabezado, "tas");
 
  	var interseccionindices = interSection(indicesizquierda, indicesderecha);
  	var numeroviolentos = interseccionindices.length;
 
  	var porctoptas = 100 * totalhomder / totalhom;
  	var porctophom = 100 * totalhomizq / totalhom;
+ 	var porcpobtoptas = 100 * totalpobder / totalpob;
+ 	var porcpobtophom = 100 * totalpobizq / totalpob;
+
  	var viejoyr = $( ".selected-yr" ).text();
     var viejoyrnum = Number(viejoyr);
     d3.select('[yr="'+ viejoyrnum +'"]').classed("yr-activo", false);
@@ -249,6 +257,9 @@ function generadorTablas(tabla, yr, n){
  	d3.select('[yr="'+ yr +'"]').classed("yr-activo", true);
  	$('#tabla-izquierda').empty();
  	$('#tabla-derecha').empty();
+ 	$('.porc-pob-top-tas').empty();
+ 	$('.porc-pob-top-hom').empty();
+
  	$('.porc-top-tas').empty();
  	$('.porc-top-hom').empty();
  	$('.num-vio').empty();
@@ -257,6 +268,8 @@ function generadorTablas(tabla, yr, n){
  	$('.selected-year').append(yr);
  	$('.porc-top-tas').append(porctoptas.toFixed(2));
  	$('.porc-top-hom').append(porctophom.toFixed(2));
+ 	$('.porc-pob-top-tas').append(porcpobtoptas.toFixed(2));
+ 	$('.porc-pob-top-hom').append(porcpobtophom.toFixed(2));
  	$('#tabla-izquierda').append(izquierdaimpresa);
  	$('#tabla-derecha').append(derechaimpresa);
  	for(var i=0; i<interseccionindices.length;i++){
