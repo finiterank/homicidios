@@ -6,7 +6,7 @@
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40};
 var width = $('#grafico').width() - margin.left - margin.right;
-var height = 250 - margin.top - margin.bottom;
+var height = 180 - margin.top - margin.bottom;
 
 var x = d3.scale.ordinal()
     .rangeRoundBands([0, width], .1);
@@ -164,14 +164,17 @@ function tablaImpresa(tabla, encabezados, clase){
 		output = output.concat('<tr class="' + clase + ' fila_' + tabla[j][0].replace(/"/g, '') + '">');
         output = output.concat('<td>').concat(j+1).concat('</td>');
 		for(var k=0;k<n;k++){
+            var claseCol = '';
 			if(isNaN(tabla[j][k+1])){
+                claseCol = '';
 				v = tabla[j][k+1].replace(/"/g, '');
 			}
 			else{
+                claseCol = 'numero';
 				if(Number(tabla[j][k+1]) === parseInt(Number(tabla[j][k+1]))){v = Number(tabla[j][k+1]);}
 				else{v = Number(tabla[j][k+1]).toFixed(2);}
 			}
-			output = output.concat('<td>').concat(v).concat('</td>');
+			output = output.concat('<td class="' + claseCol + '">').concat(v).concat('</td>');
 		}
 		output = output.concat('</tr>');
 	}
