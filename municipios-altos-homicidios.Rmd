@@ -5,6 +5,7 @@ Listas de Municipios con Altos Homicidios
 library(plyr)
 library(ggplot2)
 library(Hmisc)
+library(reshape)
 ```
 
 ```{r}
@@ -111,3 +112,89 @@ for(i in 1:24){
   print(violentos[[i]][,c("municipio", "departamento")], row.names=FALSE)
 }
 ```
+
+```{r}
+columnas.tas = c()
+columnas.hom = c()
+columnas.pob = c()
+for(i in 1990:2013){
+  sufijo <- lastnchar(i, 2)
+  columnas.hom = c(columnas.hom, paste("hom", sufijo, sep=""))
+  columnas.pob = c(columnas.pob, paste("pob", sufijo, sep=""))
+  columnas.tas = c(columnas.tas, paste("tas", sufijo, sep=""))
+}
+```
+
+```{r}
+tasaciudad <- function(ciudad){
+  historia.tas <- h.df[h.df$municipio == ciudad, columnas.tas]
+  historia.tas <- as.numeric(historia.tas)
+  return(historia.tas)
+}
+```
+
+```{r}
+plot.tasa.ciudad <- function(ciudad){
+  tasas <- tasaciudad(ciudad)
+  df <- data.frame(yr=1990:2013, tasa = tasas)
+  p <- ggplot(df, aes(x=yr, y=tasa)) + 
+    geom_bar(stat="identity", fill="dodgerblue") +
+    xlab("Año") +
+    ylab("Tasa de homicidios (por cada 100k habitantes)") + 
+    ggtitle(paste("Tasa de homicidios de", ciudad, "(1990-2013)", sep=" "))
+  return(p)                                                                        
+}
+```
+
+
+```{r}
+
+v <- h.df[, columnas.hom]
+p <- colSums(h.df[, columnas.pob], na.rm=T)
+s <- colSums(v, na.rm = T)
+col <- c(1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7)
+d <- data.frame(year = 1990:2013, homs = s, col=col, pob = p)
+d$tas <- 100000 * (d$homs/d$pob)
+d$col <- as.factor(d$col)
+# a <- ggplot(d, aes(x=year, y=homs)) +geom_bar(fill="orange", stat="identity") + xlab("Año") + ylab("Número de homicidios") 
+# a
+b <- ggplot(d, aes(x=year, y=tas, fill=col)) +geom_bar(stat="identity") + xlab("Año") + ylab("Tasa de homicidios") + ggtitle("Tasa de homicidios (1990-2013)") + scale_fill_discrete(name="Presidencia", labels = c("Barco", "Gaviria", "Samper", "Pastrana", "Uribe 1", "Uribe 2", "Santos"))
+b
+```
+
+```{r}
+a = 2
+x = toptas[[24-a]][, 1]
+for(i in (24-a+1):24){
+  x = intersect(x, toptas[[i]][, 1])
+}
+h.df[h.df$cod %in% x, c("municipio", "departamento")]
+```
+
+```{r}
+bog <- h.df[h.df$municipio == "Bogotá D.C.", columnas.tas]
+bog <- as.numeric(bog)
+
+med <- h.df[h.df$municipio == "Medellín", columnas.tas]
+med <- as.numeric(med)
+
+cal <- h.df[h.df$municipio == "Cali", columnas.tas]
+cal <- as.numeric(cal)
+
+man <- h.df[h.df$municipio == "Manizales", columnas.tas]
+man <- as.numeric(man)
+
+buc <- h.df[h.df$municipio == "Bucaramanga", columnas.tas]
+buc <- as.numeric(buc)
+
+bar <- h.df[h.df$municipio == "Barranquilla", columnas.tas]
+bar <- as.numeric(bar)
+
+
+grupo.df <- data.frame(yr = 1990:2013, tasam = med, tasab = bog, tasac = cal, tasaman = man, tasabuc = buc, tasabar = bar)
+melt.total.df = melt(grupo.df[,c("yr", "tasab", "tasam", "tasac", "tasaman", "tasabuc", "tasabar")], id.vars=1)
+p_total<- ggplot(melt.total.df, aes(x=yr, y=value)) + geom_bar(aes(fill=variable), position = "dodge", stat="identity") + scale_fill_discrete(name = "Ciudad", labels = c("Bogotá", "Medellín", "Cali", "Manizales", "Bucaramanga", "Barranquilla")) + xlab("Año") + ylab("Tasa de homicidios") + ggtitle("Tasas de homicidios de \nBogotá, Medellín, Cali, Manizales, Bucaramanga y Barranquilla (1990-2013)")
+p_total
+ggsave("cincotasas.png", p_total, width=15, height=5)
+```
+
