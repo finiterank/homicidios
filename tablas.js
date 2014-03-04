@@ -5,8 +5,10 @@
 // Gráficos 
 
 var margin = {top: 20, right: 20, bottom: 30, left: 40};
-var width = $('#grafico').width() - margin.left - margin.right;
+var width = parseFloat(d3.select("#grafico").style("width")) - margin.left - margin.right;
 var height = 180 - margin.top - margin.bottom;
+
+console.log(width);
 
 var x = d3.scale.ordinal()
     .rangeRoundBands([0, width], .1);
@@ -26,8 +28,8 @@ var yAxis = d3.svg.axis()
 var svg = d3.select("#grafico").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//	.append("g")
+//    	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 function click(d){
   generadorTablas(tabla, d.yr, 50);
@@ -48,22 +50,16 @@ function pintarGrafico(tabla){
 	x.domain(data.map(function(d) { return d.yr.toString().slice(-2);}));
 	y.domain([0, d3.max(data, function(d) { return d.tasa; })]);
 
-  	svg.append("g")
+  var xax = svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis);
 
-  	svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis);
-      //.append("text")
-      //.attr("transform", "rotate(-90)")
-      //.attr("y", 6)
-      //.attr("dy", ".71em")
-      //.style("text-anchor", "end")
-      //.text("Tasa Homs.");
+//  var yax = svg.append("g")
+//      .attr("class", "y axis")
+//      .call(yAxis);
 
-  svg.selectAll(".bar")
+  var bars = svg.selectAll(".bar")
       .data(data)
       .enter().append("rect")
       .attr("class", "bar")
@@ -75,7 +71,50 @@ function pintarGrafico(tabla){
       .on("click", function(d){
       	generadorTablas(tabla, d.yr, 50);
       });
+
+  var labels = svg.selectAll("text.lab-barras")
+  				.data(data)
+  				.enter().append("text")
+  				.attr("class", "lab-barras")
+  				.text(function(d){return d.tasa.toFixed(1);})
+  				.attr("x", function(d) { return x(d.yr.toString().slice(-2)) + x.rangeBand() / 2 ; })
+  				.attr("text-anchor", "middle")
+  				.attr("y", function(d) { return y(d.tasa) + 15; })
+  				.attr("font-size", "7.8px")
+  				.attr("fill", "white");
+
+d3.select(window).on('resize', resize); 
+
+
+function resize(){
+	// Reestablecer el ancho
+	width = parseFloat(d3.select("#grafico").style("width")) - margin.left - margin.right;
+	console.log(width);
+	// Reestablecer la escala en el eje X.
+	
+	x.domain(data.map(function(d) { return d.yr.toString().slice(-2);}))
+		.rangeRoundBands([0, width], 0.1);
+
+	// Reestablecer el ancho del SVG
+	d3.select("svg").attr("width", width);
+	
+	console.log("SVG: " + d3.select("svg").style("width"));
+	// Reestablecer el ancho de las barras y su posición.
+	xAxis.scale(x);
+
+	xax.call(xAxis);
+
+	bars
+		.attr("x",  function(d) { return x(d.yr.toString().slice(-2)); })
+		.attr("width", x.rangeBand());
+	labels
+		.attr("x", function(d) { return x(d.yr.toString().slice(-2)) + x.rangeBand() / 2 ; })
 }
+
+};
+
+
+
 
 // Tablas
 
