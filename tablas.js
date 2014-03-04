@@ -20,16 +20,9 @@ var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom");
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10, "");
-
 var svg = d3.select("#grafico").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-//	.append("g")
-//    	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 function click(d){
   generadorTablas(tabla, d.yr, 50);
@@ -54,10 +47,6 @@ function pintarGrafico(tabla){
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis);
-
-//  var yax = svg.append("g")
-//      .attr("class", "y axis")
-//      .call(yAxis);
 
   var bars = svg.selectAll(".bar")
       .data(data)
