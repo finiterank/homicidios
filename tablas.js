@@ -85,7 +85,7 @@ function resize(){
 		.rangeRoundBands([0, width], 0.1);
 
 	// Reestablecer el ancho del SVG
-	d3.select("svg").attr("width", width);
+	svg.attr("width", width);
 	
 	console.log("SVG: " + d3.select("svg").style("width"));
 	// Reestablecer el ancho de las barras y su posición.
