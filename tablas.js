@@ -77,10 +77,12 @@ d3.select(window).on('resize', resize);
 
 function resize(){
 	// Reestablecer el ancho
-	width = parseFloat(d3.select("#grafico").style("width")) - margin.left - margin.right;
-	console.log(width);
+    width = parseFloat(d3.select("#grafico").style("width"));
+    if (width > 768) {
+        width = width - margin.left - margin.right;
+    }
+
 	// Reestablecer la escala en el eje X.
-	
 	x.domain(data.map(function(d) { return d.yr.toString().slice(-2);}))
 		.rangeRoundBands([0, width], 0.1);
 
